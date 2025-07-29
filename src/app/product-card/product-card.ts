@@ -1,9 +1,4 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { ProductCard } from './product-card/product-card';
-import { Navbar } from './navbar/navbar';
-import { Footer } from './footer/footer';
-import { HeroSectionSlide } from './hero-section-slide/hero-section-slide';
+import { Component, Input } from '@angular/core';
 
 interface Product {
   id: number;
@@ -12,27 +7,20 @@ interface Product {
   description: string;
   category: string;
   image: string;
+  quantity?: number;
   rating: {
     rate: number;
     count: number;
   };
 }
-interface CartItem extends Product {
-  qty: number;
-}
-
 @Component({
-  selector: 'app-root',
-  imports: [RouterOutlet, ProductCard, Navbar, Footer, HeroSectionSlide],
-
-  templateUrl: './app.html',
-  styleUrl: './app.css',
+  selector: 'app-product-card',
+  imports: [],
+  templateUrl: './product-card.html',
+  styleUrl: './product-card.css',
 })
-export class App {
-  protected title = 'first-app';
-  cart: CartItem[] = [];
-  isOpen = false;
-
+export class ProductCard {
+  @Input() item: any;
   ngOnInit() {
     if (typeof localStorage !== 'undefined') {
       const cart_list = localStorage.getItem('cart_list') ?? '[]';
@@ -43,7 +31,19 @@ export class App {
   cart_list: Product[] = [];
 
   addToCart(item: Product) {
-    this.cart_list.push(item);
+    const existingItem = this.cart_list.find((p) => p.id === item.id);
+    if (existingItem) {
+      if (existingItem.quantity !== undefined) {
+        existingItem.quantity += 1; // increase quantity if already exists
+      } else {
+        existingItem.quantity = 1;
+      }
+    } else {
+      this.cart_list.push({
+        ...item,
+        quantity: 1, // default quantity
+      });
+    }
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('cart_list', JSON.stringify(this.cart_list));
     }
